@@ -5,11 +5,13 @@
 #include <windows.h>
 #include <io.h>
 #include <sys/stat.h>
+#include <dirent.h>
 #endif
 
 #ifndef FILE_IO_H
 #define FILE_IO_H
 
+#define GIT_OK 0
 #define GIT_ERROR 1
 
 #ifndef FILE_STATE
@@ -21,7 +23,7 @@
 #endif
 
 // 判断路径是文件，还是文件夹
-void PathProperty(char *path, int *state)
+void PathProperty(char *path, short *state)
 {
     struct stat s;
     if (stat(path, &s) == 0)
@@ -45,10 +47,16 @@ void PathProperty(char *path, int *state)
     }
 }
 
+void CreateDir(char *path)
+{
+    char *command = "mkdir ";
+    system(strcat(command, path));
+}
+
 // 读取配置文件
 void ReadConfig(char *path, int *state)
 {
-    int configState;
+    short configState;
     PathProperty(path, &configState);
     if (configState == PATH_IS_FILE) // 存在配置文件，读取配置文件
     {
@@ -58,6 +66,21 @@ void ReadConfig(char *path, int *state)
         char *command = "type nul>";
         system(strcat(command, path));
     }
+}
+
+void ReadDirContent(char *path)
+{
+    char *dirContent;
+    DIR *dir = opendir(path);
+    struct dirent *entry;
+    int cnt = 0;
+    while ((entry = readdir(dir)) != 0)
+    {
+        dirContent = entry->d_name;
+        printf("%s\n", dirContent);
+        cnt++;
+    }
+    // return dirContent;
 }
 
 #endif
