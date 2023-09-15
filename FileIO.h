@@ -6,6 +6,7 @@
 #include <io.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <direct.h>
 #endif
 
 #ifndef FILE_IO_H
@@ -26,6 +27,15 @@
 #define PATH_IS_EXIST 1
 
 #endif
+
+char *GetCurrentWorkPath()
+{
+    char *newStr = (char *)(malloc(sizeof(char) * MAX_PATH_LENGTH));
+    if (_getcwd(newStr, MAX_PATH_LENGTH) != NULL)
+        return newStr;
+    else
+        return "C:\\";
+}
 
 // 拼接字符串，额外申请可见，返回一个新的字符串
 char *StrConcat(char *s1, char *s2)
@@ -122,6 +132,27 @@ short DirEmpty(char *path)
     {
         return 1; // 路径文件夹为空
     }
+}
+
+// 判断文件夹是否为空，空则返回1
+short DirFind(char *path, char *name)
+{
+    short dirState = 0;
+    char *dirContent;
+    PathProperty(path, &dirState);
+    if (dirState != PATH_IS_DIR)
+    {
+        return 0; // 路径文件夹不存在
+    }
+    DIR *dir = opendir(path);
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != 0)
+    {
+        dirContent = entry->d_name;
+        if (strcmp(dirContent, name) == 0)
+            return 1;
+    }
+    return 0; // 找不到
 }
 
 void ReadDirContent(char *path, char *state)

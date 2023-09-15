@@ -103,15 +103,16 @@ GitRep *RepoCreate(char *path)
     init(newRep, path, 1);
 
     short repState = 0;
+    short pathState = 0;
     PathProperty(newRep->worktree, &repState);
-    if (PathExist(path, &repState) == PATH_IS_EXIST)
+    if (PathExist(path, &pathState) == PATH_IS_EXIST)
     {
         if (!(repState == PATH_IS_DIR))
         {
             gitState = GIT_ERROR;
             return NULL;
         }
-        else if (!DirEmpty(newRep->gitdir))
+        else if (DirFind(newRep->worktree, ".git"))
         {
             gitState = GIT_ERROR;
             return NULL;
@@ -154,13 +155,39 @@ GitRep *RepoCreate(char *path)
     return &newRep;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-
-    int s;
+    if (argc == 1)
+    {
+        printf("RuGit. Va0.1\nCreated by Chafiprc.");
+    }
+    else
+    {
+        if (strcmp(argv[1], "init") == 0)
+        {
+            char *initPath;
+            if (argc == 2)
+            {
+                // printf("%s\n", GetCurrentWorkPath());
+                RepoCreate(GetCurrentWorkPath());
+                printf("%d", gitState);
+            }
+            else if (argc >= 3 && strcmp(argv[2], "help") == 0)
+            {
+                printf("Where to create the repository.");
+            }
+            else
+            {
+                // printf("%s", StrConcat(GetCurrentWorkPath(), initPath));
+                initPath = StrConcat("\\", argv[2]);
+                RepoCreate(StrConcat(GetCurrentWorkPath(), initPath));
+                printf("%d", gitState);
+            }
+        }
+    }
     // PathProperty("D:\\SoftLib\\Code\\Project\\RuGit\\.git\\config", &s);
     // ReadDirContent("D:\\SoftLib");
-    RepoCreate("C:\\Users\\chafiprc\\Desktop\\newGitRepo");
-    printf("%d", gitState);
+    // RepoCreate("C:\\Users\\chafiprc\\Desktop\\newGitRepo");
+    // printf("%d", gitState);
     // printf("%d", s);
 }
