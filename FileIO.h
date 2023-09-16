@@ -9,24 +9,13 @@
 #include <direct.h>
 #endif
 
+#ifndef GIT_CONSTANT_H
+#define GIT_CONSTANT_H
+#include "GitConstant.h"
+#endif
+
 #ifndef FILE_IO_H
 #define FILE_IO_H
-
-#define MAX_PATH_LENGTH 255
-
-#define GIT_OK 0
-#define GIT_ERROR 1
-
-#ifndef FILE_STATE
-#define FILE_STATE
-#define PATH_IS_FILE 0
-#define PATH_IS_DIR 1
-#define PATH_ERROR 2
-
-#define PATH_IS_NOT_EXIST 0
-#define PATH_IS_EXIST 1
-
-#endif
 
 char *GetCurrentWorkPath()
 {
@@ -43,6 +32,15 @@ char *StrConcat(char *s1, char *s2)
     char *newStr = (char *)(malloc(sizeof(char) * MAX_PATH_LENGTH));
     strcpy(newStr, s1);
     strcat(newStr, s2);
+    return newStr;
+}
+
+// 切片字符串，从i下标开始，一共有j个字符
+char *SliceStr(char *s1, int i, int j)
+{
+    char *newStr = (char *)(malloc(sizeof(char) * MAX_PATH_LENGTH));
+    int l = strlen(s1);
+    strncpy(newStr, s1 + i, min(j, l - i));
     return newStr;
 }
 
@@ -97,6 +95,13 @@ void WriteDefaultConfig(FILE *file)
     fprintf(file, "core.repositoryformatversion=0\n");
     fprintf(file, "core.filemode=false\n");
     fprintf(file, "core.bare=false\n");
+}
+
+char *ReadAllFile(FILE *file)
+{
+    char *fileContent = (char *)(malloc(sizeof(char) * 65535));
+    fread(fileContent, sizeof(char), 65535, file);
+    return fileContent;
 }
 
 // 读取配置文件
