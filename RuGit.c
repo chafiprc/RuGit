@@ -4,11 +4,39 @@
 #include "GitZlib.h"
 #include "UnsolvedF.h"
 
-int main(int argc, char *argv[])
+// typedef struct CommandParameter
+// {
+//     char *commandName;
+//     char **option;
+//     char *help;
+// } CommandParameter;
+
+// CommandParameter *CommandParameterConstructor(const char *commandName, const char *helpInfo)
+// {
+//     CommandParameter *newCP = (CommandParameter *)(malloc(sizeof(CommandParameter)));
+//     newCP->help = helpInfo;
+//     newCP->commandName = commandName;
+//     return newCP;
+// }
+
+// void InitExecute(int argc, char *argv[])
+// {
+// }
+
+// void Execute(int argc, char *argv[])
+// {
+//     CommandParameter *InitCommand = CommandParameterConstructor("init", "Initialize a new, empty repository.");
+//     if (argc == 1)
+//     {
+//         printf("RuGit. Va0.1\nCreated by Chafiprc.\nUse '--help' for more options.");
+//     }
+// }
+
+main(int argc, char *argv[])
 {
     if (argc == 1)
     {
-        printf("RuGit. Va0.1\nCreated by Chafiprc.");
+        printf("RuGit. Va0.1\nCreated by Chafiprc.\nUse '--help' for more options.");
     }
     else
     {
@@ -68,6 +96,16 @@ int main(int argc, char *argv[])
                 GitRep *newRep = RepoFind();
                 CatFile(newRep, (GitObj *)obj, Encode(fmt[type]));
             }
+        }
+        else if (strcmp(argv[1], "--help") == 0)
+        {
+            printf("usage:\nRuGit [init/cat-file/hash-object] [...]\n");
+            printf("init [name(option)]     Initialise a RuGit Repo. If this parameter is filled in, a folder named with 'name' will be generated in the current directory, and the initialisation will be done in that folder, otherwise the initialisation will be done directly in the current directory.\n");
+            printf("cat-file []");
+        }
+        else
+        {
+            printf("Unknow command. Try to type 'RuGit --help' for more information.");
         }
     }
     // PathProperty("D:\\SoftLib\\Code\\Project\\RuGit\\.git\\config", &s);
