@@ -93,8 +93,8 @@ main(int argc, char *argv[])
 
                 char *obj = argv[3];
 
-                GitRep *newRep = RepoFind();
-                CatFile(newRep, (GitObj *)obj, Encode(fmt[type]));
+                GitRep *newRep = RepoFind(NULL);
+                CatFile(newRep, (void *)obj, fmt[type]);
             }
         }
         else if (strcmp(argv[1], "--help") == 0)

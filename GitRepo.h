@@ -176,4 +176,34 @@ GitRep *RepoCreate(char *path)
 
     return newRep;
 }
+
+// 寻找repo 默认需填写path=NULL
+GitRep *RepoFind(char *path)
+{
+    if (path == NULL)
+        char *path = GetCurrentWorkPath();
+    short pathState = 0;
+    PathProperty(StrConcat(path, "\\.git"), &pathState);
+    if (pathState == PATH_IS_DIR)
+    {
+        GitRep *rep = (GitRep *)malloc(sizeof(GitRep));
+        RepoInit(rep, path, 0);
+        return rep;
+    }
+    int pathLen = strlen(path);
+    int index = 0;
+    for (int i = pathLen; i >= 0; i--)
+    {
+        if (path[i] == '\\')
+        {
+            index = i;
+            break;
+        }
+    }
+    char *parent = SliceStr(path, 0, index);
+
+    if (index == 0) // 说明是根目录
+        return NULL;
+    return RepoFind(parent);
+}
 #endif

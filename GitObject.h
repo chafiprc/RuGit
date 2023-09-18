@@ -37,13 +37,25 @@
 #ifndef GIT_OBJECT_H
 #define GIt_OBJECT_H
 
-struct GitObject
+typedef struct GitObject
 {
+    unsigned parsed : 1;
+    unsigned used : 1;
+    unsigned int flags;
+    unsigned char sha1[20];
+    const char *type;
+    struct object_list *refs;
+    void *util;
     char *data;
     char *fmt;
-};
+} GitObj;
 
-typedef struct GitObject GitObj;
+typedef struct ObjectList
+{
+    struct object *item;
+    struct object_list *next;
+    const char *name;
+} ObjectList;
 
 // Git Commit Obj
 typedef struct GitCommit
@@ -85,28 +97,39 @@ GitBlob *GitBlobConstruct(char *data)
 {
 }
 
-char *Serialize(GitObj *newObj, GitRep *repo)
+// 统一序列化函数
+char *Serialize(void *newObj, GitRep *repo, char *fmt)
 {
+    if (strcmp(fmt, "blob") == 0)
+    {
+        return ((GitBlob *)newObj)->data;
+    }
     return NULL;
     //
 }
 
-void Deserialize(GitObj *newObj, char *data)
+// 统一解除序列化函数
+void Deserialize(void *newObj, char *data, char *fmt)
 {
+    if (strcmp(fmt, "blob") == 0)
+    {
+        ((GitBlob *)newObj)->data = data;
+    }
     //
 }
 
 void GitObjInit(GitObj *newObj, char *data)
 {
     if (data != NULL)
-        Deserialize(newObj, data);
+        Deserialize(newObj, data, "obj");
     else
     {
         //
     }
 }
 
-char *ObjRead(GitRep *newRep, char *sha)
+// 读取对象，newRep为库，sha为sha值，fmt是读取获得的类别
+void *ObjRead(GitRep *newRep, char *sha, char *fmt)
 {
     short fileState;
     char *fileDirPath = StrConcat(StrConcat(newRep->gitdir, "\\objects\\"), SliceStr(sha, 0, 2));
@@ -120,20 +143,43 @@ char *ObjRead(GitRep *newRep, char *sha)
     file = fopen(path, "rb");
     char *raw = NULL;
     uLong rawLength;
-    UncompressString(ReadAllFile(file), &raw, &rawLength);
+    char *content = ReadAllFile(file);
 
-    int x = (int)(strstr(raw, " ") - raw);
-    char *fmt = SliceStr(raw, 0, x);
-    // int y = (int)(strstr(raw + x, "\x00") - raw - x);
+    UncompressStr(content, strlen(content), &raw, &rawLength);
 
-    return fmt;
+    int x = (int)(strchr(raw, ' ') - raw);
+    fmt = SliceStr(raw, 0, x);
+    int y = (int)(strchr(raw, '\x00') - raw);
+
+    if (strcmp(fmt, "commit") == 0)
+    {
+        return (void *)GitCommitConstruct(SliceStr(raw, y + 1, 10086));
+    }
+    else if (strcmp(fmt, "tree") == 0)
+    {
+        return (void *)GitTreeConstruct(SliceStr(raw, y + 1, 10086));
+    }
+    else if (strcmp(fmt, "tag") == 0)
+    {
+        return (void *)GitTagConstruct(SliceStr(raw, y + 1, 10086));
+    }
+    else if (strcmp(fmt, "blob") == 0)
+    {
+        return (void *)GitBlobConstruct(SliceStr(raw, y + 1, 10086));
+    }
+    else
+    {
+        printf("Error Type!");
+        return NULL;
+    }
+    // return fmt;
 }
 
-char *ObjWrite(GitObj *newObj, GitRep *newRep)
+char *ObjWrite(void *newObj, GitRep *newRep, char *fmt)
 {
-    char *data = Serialize(newObj, newRep);
-    char *result = StrConcat(StrConcat(StrConcat(newObj->fmt, " "), StrConcat(EncodeInt(strlen(data)), "\x00")), data);
-    char *sha = ComputeHash(result);
+    char *data = Serialize(newObj, newRep, fmt);
+    char *result = StrConcat(StrConcat(StrConcat(fmt, " "), StrConcat(EncodeInt(strlen(data)), "\x00")), data);
+    char *sha = (char *)ComputeHash((unsigned char *)result);
 
     if (newRep != NULL)
     {
@@ -142,23 +188,27 @@ char *ObjWrite(GitObj *newObj, GitRep *newRep)
         char *path = RepoFile(StrConcat(fileDirPath, "\\"), SliceStr(sha, 2, 255), 1, &fileState);
         if (PathExist(path, &pathState))
         {
+            char *compressResult;
+            uLong crLength;
             FILE *file = fopen(path, "wb");
-            fprintf(file, "%s", result);
+            CompressStr(result, &compressResult, &crLength);
+            fprintf(file, "%s", compressResult);
             fclose(file);
         }
     }
     return sha;
 }
 
-GitObj *ObjFind(GitRep *newRep, GitObj *name, char *fmt, short follow)
+// 寻找对象
+char *ObjFind(GitRep *newRep, void *name, char *fmt, short follow)
 {
-    return name;
+    return (char *)name;
 }
 
-void CatFile(GitRep *newRep, GitObj *newObj, char *fmt)
+void CatFile(GitRep *newRep, void *newObj, char *fmt)
 {
-    // char *obj = ObjRead(newRep, (char *)ObjFind(newRep, newObj, fmt, 1));
-    printf("%s", Serialize(newObj, newRep));
+    char *obj = ObjRead(newRep, (char *)ObjFind(newRep, newObj, fmt, 1), fmt);
+    printf("%s", Serialize(newObj, newRep, fmt));
 }
 
 struct KeyValue
