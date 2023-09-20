@@ -97,6 +97,33 @@ GitBlob *GitBlobConstruct(char *data)
 {
 }
 
+// 统一构造函数
+void *GitObjConstructor(char *data, char *fmt)
+{
+    void *obj = malloc(sizeof(GitCommit));
+    if (strcmp(fmt, "blob") == 0)
+    {
+        ((GitBlob *)obj)->data = data;
+    }
+    else if (strcmp(fmt, "tree") == 0)
+    {
+        ((GitTree *)obj)->data = data;
+    }
+    else if (strcmp(fmt, "commit") == 0)
+    {
+        ((GitCommit *)obj)->data = data;
+    }
+    else if (strcmp(fmt, "Tag") == 0)
+    {
+        ((GitTag *)obj)->data = data;
+    }
+    else
+    {
+        obj = NULL;
+    }
+    return obj;
+}
+
 // 统一序列化函数
 char *Serialize(void *newObj, GitRep *repo, char *fmt)
 {

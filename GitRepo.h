@@ -181,7 +181,7 @@ GitRep *RepoCreate(char *path)
 GitRep *RepoFind(char *path)
 {
     if (path == NULL)
-        char *path = GetCurrentWorkPath();
+        path = GetCurrentWorkPath();
     short pathState = 0;
     PathProperty(StrConcat(path, "\\.git"), &pathState);
     if (pathState == PATH_IS_DIR)

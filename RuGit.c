@@ -97,6 +97,16 @@ main(int argc, char *argv[])
                 CatFile(newRep, (void *)obj, fmt[type]);
             }
         }
+        else if (strcmp(argv[1], "hash-object") == 0)
+        {
+            if (argc >= 3 && strcmp(argv[2], "help") == 0)
+            {
+                printf("Compute object ID and optionally creates a blob from a file.");
+            }
+            else if (argc >= 3 && (strcmp(argv[2], "type") == 0 || strcmp(argv[2], "-t")))
+            {
+            }
+        }
         else if (strcmp(argv[1], "--help") == 0)
         {
             printf("usage:\nRuGit [init/cat-file/hash-object] [...]\n");
@@ -105,7 +115,7 @@ main(int argc, char *argv[])
         }
         else
         {
-            printf("Unknow command. Try to type 'RuGit --help' for more information.");
+            printf("'%s' Unknow command. Try to type 'RuGit --help' for more information.", argv[1]);
         }
     }
     // PathProperty("D:\\SoftLib\\Code\\Project\\RuGit\\.git\\config", &s);
@@ -113,4 +123,28 @@ main(int argc, char *argv[])
     // RepoCreate("C:\\Users\\chafiprc\\Desktop\\newGitRepo");
     // printf("%d", gitState);
     // printf("%d", s);
+}
+
+char *ObjectHash(FILE *file, char *fmt, GitRep *newRep)
+{
+    void *obj;
+    char *data = ReadAllFile(file);
+    obj = GitObjConstructor(data, fmt);
+    return ObjWrite(obj, newRep, fmt);
+}
+
+void CMD_HashObject(short isWrite, char *fmt, char *path)
+{
+    GitRep *newRep = (GitRep *)malloc(sizeof(GitRep));
+    if (isWrite)
+    {
+        newRep = RepoFind(NULL);
+    }
+    else
+    {
+        newRep = NULL;
+    }
+
+    FILE *file = open(path, "rb");
+    char *sha = ObjectHash(file, fmt, newRep);
 }
