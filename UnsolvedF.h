@@ -11,13 +11,17 @@
 
 #include "GitRepo.h"
 
+#include "GitEncode.h"
+
+#include "GitHash.h"
+
 #ifndef UNSOLVED_F_H
 #define UNSOLVED_F_H
-char *ComputeHash(char *data)
-{
-    // Waiting for further work.
-    return NULL;
-}
+unsigned char *ComputeHash(unsigned char *data);
+// {
+//     // Waiting for further work.
+//     return NULL;
+// } Finish work in GitHash.h
 
 char *Encode(char *data)
 {

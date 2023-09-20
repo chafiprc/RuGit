@@ -238,89 +238,113 @@ void CatFile(GitRep *newRep, void *newObj, char *fmt)
     printf("%s", Serialize(newObj, newRep, fmt));
 }
 
-struct KeyValue
+typedef struct GitKeyValue
 {
     char *key;
     char *value;
-    struct KeyValue *next;
-};
+    struct GitKeyValue *next;
+} GitKeyValue;
 
-// 解析键值对文本数据并返回一个链表
-struct KeyValue *KVLM_Parse(const char *raw)
+GitKeyValue *KVLM_Parse(const char *raw)
 {
-    struct KeyValue *head = NULL;
-    struct KeyValue *current = NULL;
-    const char *line = raw;
+    GitKeyValue *head = (GitKeyValue *)malloc(sizeof(GitKeyValue));
+    head->key = NULL;
+    head->value = NULL;
+    head->next = NULL;
 
-    while (*line != '\0')
+    int space = strchr(raw, ' ') - raw;
+    int newLine = strchr(raw, '\n') - raw;
+    if (space < 0 || newLine < space)
     {
-        const char *space = strchr(line, ' ');
-        const char *newline = strchr(line, '\n');
-
-        if (newline == NULL || (space != NULL && space < newline))
-        {
-            // 当前行是一个键值对
-            size_t key_len = space - line;
-            char *key = strndup(line, key_len);
-
-            // 找到值的结束位置
-            const char *value_start = space + 1;
-            const char *value_end = newline;
-            while (*value_start == ' ')
-            {
-                value_start++;
-            }
-
-            size_t value_len = value_end - value_start;
-            char *value = strndup(value_start, value_len);
-
-            // 创建键值对节点
-            struct KeyValue *kv = (struct KeyValue *)malloc(sizeof(struct KeyValue));
-            kv->key = key;
-            kv->value = value;
-            kv->next = NULL;
-
-            // 将节点添加到链表中
-            if (head == NULL)
-            {
-                head = kv;
-                current = kv;
-            }
-            else
-            {
-                current->next = kv;
-                current = kv;
-            }
-
-            line = newline + 1;
-        }
-        else
-        {
-            // 当前行是消息内容
-            char *message = strdup(line + 1);
-
-            // 创建键值对节点，键为NULL
-            struct KeyValue *kv = (struct KeyValue *)malloc(sizeof(struct KeyValue));
-            kv->key = NULL;
-            kv->value = message;
-            kv->next = NULL;
-
-            // 将节点添加到链表中
-            if (head == NULL)
-            {
-                head = kv;
-                current = kv;
-            }
-            else
-            {
-                current->next = kv;
-                current = kv;
-            }
-
-            break;
-        }
+        return head;
     }
+
+    GitKeyValue *newKeyValue = (GitKeyValue *)malloc(sizeof(GitKeyValue));
+    newKeyValue->key = SliceStr(raw, 0, space);
+
+    // TODO...
+
     return head;
 }
+
+// // 解析键值对文本数据并返回一个链表
+// struct KeyValue *KVLM_Parse(const char *raw)
+// {
+//     struct KeyValue *head = NULL;
+//     struct KeyValue *current = NULL;
+//     const char *line = raw;
+
+//     while (*line != '\0')
+//     {
+//         // const char *space = strchr(line, ' ');
+//         // const char *newline = strchr(line, '\n');
+//         int space = strchr(line, ' ') - line;
+//         int newLine = strchr(line, '\n') - line;
+
+//         if (newline == NULL || (space != NULL && space < newline))
+//         {
+//             // 当前行是一个键值对
+//             size_t key_len = space - line;
+//             char *key = SliceStr(raw, ); // strndup(line, key_len);
+
+//             // 找到值的结束位置
+//             const char *value_start = space + 1;
+//             const char *value_end = newline;
+//             while (*value_start == ' ')
+//             {
+//                 value_start++;
+//             }
+
+//             size_t value_len = value_end - value_start;
+//             char *value = strndup(value_start, value_len);
+
+//             // 创建键值对节点
+//             struct KeyValue *kv = (struct KeyValue *)malloc(sizeof(struct KeyValue));
+//             kv->key = key;
+//             kv->value = value;
+//             kv->next = NULL;
+
+//             // 将节点添加到链表中
+//             if (head == NULL)
+//             {
+//                 head = kv;
+//                 current = kv;
+//             }
+//             else
+//             {
+//                 current->next = kv;
+//                 current = kv;
+//             }
+
+//             line = newline + 1;
+//         }
+//         else
+//         {
+//             // 当前行是消息内容
+//             char *message = strdup(line + 1);
+
+//             // 创建键值对节点，键为NULL
+//             struct KeyValue *kv = (struct KeyValue *)malloc(sizeof(struct KeyValue));
+//             kv->key = NULL;
+//             kv->value = message;
+//             kv->next = NULL;
+
+//             // 将节点添加到链表中
+//             if (head == NULL)
+//             {
+//                 head = kv;
+//                 current = kv;
+//             }
+//             else
+//             {
+//                 current->next = kv;
+//                 current = kv;
+//             }
+
+//             break;
+//         }
+//     }
+//     return head;
+// }
 
 #endif
