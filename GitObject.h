@@ -63,19 +63,11 @@ typedef struct GitCommit
     char *data;
 } GitCommit;
 
-GitCommit *GitCommitConstruct(char *data)
-{
-}
-
 // Git Tree Obj
 typedef struct GitTree
 {
     char *data;
 } GitTree;
-
-GitTree *GitTreeConstruct(char *data)
-{
-}
 
 // Git Tag Obj
 typedef struct GitTag
@@ -83,19 +75,11 @@ typedef struct GitTag
     char *data;
 } GitTag;
 
-GitTag *GitTagConstruct(char *data)
-{
-}
-
 // Git Blob Obj
 typedef struct GitBlob
 {
     char *data;
 } GitBlob;
-
-GitBlob *GitBlobConstruct(char *data)
-{
-}
 
 // 统一构造函数
 void *GitObjConstructor(char *data, char *fmt)
@@ -178,21 +162,9 @@ void *ObjRead(GitRep *newRep, char *sha, char *fmt)
     fmt = SliceStr(raw, 0, x);
     int y = (int)(strchr(raw, '\x00') - raw);
 
-    if (strcmp(fmt, "commit") == 0)
+    if (strcmp(fmt, "commit") == 0 || strcmp(fmt, "tree") == 0 || strcmp(fmt, "tag") == 0 || strcmp(fmt, "blob") == 0)
     {
-        return (void *)GitCommitConstruct(SliceStr(raw, y + 1, 10086));
-    }
-    else if (strcmp(fmt, "tree") == 0)
-    {
-        return (void *)GitTreeConstruct(SliceStr(raw, y + 1, 10086));
-    }
-    else if (strcmp(fmt, "tag") == 0)
-    {
-        return (void *)GitTagConstruct(SliceStr(raw, y + 1, 10086));
-    }
-    else if (strcmp(fmt, "blob") == 0)
-    {
-        return (void *)GitBlobConstruct(SliceStr(raw, y + 1, 10086));
+        return GitObjConstructor(SliceStr(raw, y + 1, 10086), fmt);
     }
     else
     {
@@ -245,106 +217,50 @@ typedef struct GitKeyValue
     struct GitKeyValue *next;
 } GitKeyValue;
 
-GitKeyValue *KVLM_Parse(const char *raw)
+// 解析键值对文本数据并返回一个链表
+GitKeyValue *KVLM_Parse(char *raw)
 {
     GitKeyValue *head = (GitKeyValue *)malloc(sizeof(GitKeyValue));
     head->key = NULL;
     head->value = NULL;
     head->next = NULL;
 
-    int space = strchr(raw, ' ') - raw;
-    int newLine = strchr(raw, '\n') - raw;
-    if (space < 0 || newLine < space)
+    GitKeyValue *index = head;
+
+    int start = 0, end = 0;
+    while (1)
     {
-        return head;
+        GitKeyValue *newKeyValue = (GitKeyValue *)malloc(sizeof(GitKeyValue));
+        int space = strchr(raw, ' ') - raw;
+        // int newLine = strchr(raw, '\n') - raw;
+        if (strchr(raw, ' ') == NULL || strchr(raw, '\n') < strchr(raw, ' '))
+        {
+            index->next = newKeyValue;
+            newKeyValue->key = "None";
+            newKeyValue->value = SliceStr(raw, start + 1, 10086);
+            return head;
+        }
+        space = strchr(raw, ' ') - raw;
+        // newLine = strchr(raw, '\n') - raw;
+
+        newKeyValue->key = SliceStr(raw, start, space);
+        while (1)
+        {
+            // 找到值的末尾
+            if (strchr(raw + end + 1, '\n') != NULL)
+            {
+                end = strchr(raw + end + 1, '\n') - raw;
+                if (raw[end + 1] != ' ')
+                    break;
+            }
+        }
+        index->next = newKeyValue;
+        newKeyValue->value = SliceStr(raw, space + 1, end - space - 1);
+        start = end + 1;
+        index = index->next;
     }
-
-    GitKeyValue *newKeyValue = (GitKeyValue *)malloc(sizeof(GitKeyValue));
-    newKeyValue->key = SliceStr(raw, 0, space);
-
-    // TODO...
 
     return head;
 }
-
-// // 解析键值对文本数据并返回一个链表
-// struct KeyValue *KVLM_Parse(const char *raw)
-// {
-//     struct KeyValue *head = NULL;
-//     struct KeyValue *current = NULL;
-//     const char *line = raw;
-
-//     while (*line != '\0')
-//     {
-//         // const char *space = strchr(line, ' ');
-//         // const char *newline = strchr(line, '\n');
-//         int space = strchr(line, ' ') - line;
-//         int newLine = strchr(line, '\n') - line;
-
-//         if (newline == NULL || (space != NULL && space < newline))
-//         {
-//             // 当前行是一个键值对
-//             size_t key_len = space - line;
-//             char *key = SliceStr(raw, ); // strndup(line, key_len);
-
-//             // 找到值的结束位置
-//             const char *value_start = space + 1;
-//             const char *value_end = newline;
-//             while (*value_start == ' ')
-//             {
-//                 value_start++;
-//             }
-
-//             size_t value_len = value_end - value_start;
-//             char *value = strndup(value_start, value_len);
-
-//             // 创建键值对节点
-//             struct KeyValue *kv = (struct KeyValue *)malloc(sizeof(struct KeyValue));
-//             kv->key = key;
-//             kv->value = value;
-//             kv->next = NULL;
-
-//             // 将节点添加到链表中
-//             if (head == NULL)
-//             {
-//                 head = kv;
-//                 current = kv;
-//             }
-//             else
-//             {
-//                 current->next = kv;
-//                 current = kv;
-//             }
-
-//             line = newline + 1;
-//         }
-//         else
-//         {
-//             // 当前行是消息内容
-//             char *message = strdup(line + 1);
-
-//             // 创建键值对节点，键为NULL
-//             struct KeyValue *kv = (struct KeyValue *)malloc(sizeof(struct KeyValue));
-//             kv->key = NULL;
-//             kv->value = message;
-//             kv->next = NULL;
-
-//             // 将节点添加到链表中
-//             if (head == NULL)
-//             {
-//                 head = kv;
-//                 current = kv;
-//             }
-//             else
-//             {
-//                 current->next = kv;
-//                 current = kv;
-//             }
-
-//             break;
-//         }
-//     }
-//     return head;
-// }
 
 #endif
