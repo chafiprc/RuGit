@@ -2,6 +2,7 @@
 #include "GitObject.h"
 #include "GitRepo.h"
 #include "GitZlib.h"
+// #include "GitHash.h"
 #include "UnsolvedF.h"
 
 // typedef struct CommandParameter
@@ -32,7 +33,7 @@
 //     }
 // }
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     if (argc == 1)
     {

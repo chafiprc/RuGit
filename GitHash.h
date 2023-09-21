@@ -1,5 +1,8 @@
 #include "openssl\sha.h"
 
+#pragma comment(lib, "openssl-3.0\\x64\\lib\\libssl.lib")
+#pragma comment(lib, "openssl-3.0\\x64\\lib\\libcrypto.lib")
+
 #ifndef COMMON_HEAD
 #define COMMON_HEAD
 #include <stdlib.h>
