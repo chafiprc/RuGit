@@ -13,7 +13,7 @@
 
 #include "GitEncode.h"
 
-// #include "GitHash.h"
+// #include "GitHash.h" // UnDefined ERROR.  I HATE YOU!!!!!
 
 #ifndef UNSOLVED_F_H
 #define UNSOLVED_F_H
@@ -45,3 +45,15 @@ char *EncodeInt(int data)
 //     return NULL;
 // }
 #endif
+
+/*
+
+痛苦orz
+这个头文件内的内容都是肝不动的代码
+可以预见的是 在后续的更新中 这个头文件的内容会越来越多...
+不会写的代码都用这样来假装写完了orz
+void xxx{
+    return; //TODO
+}
+
+*/
