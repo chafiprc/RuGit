@@ -16,8 +16,7 @@ RuGit.exe init
 ```
 
 代码完成但无法运行的:
-bash
 
-```
+```bash
 RuGit.exe cat-file/hash-object
 ```
